@@ -5,4 +5,6 @@ edition = "2021"
 
 [dependencies]
 regex = "1.5.4"
-memoize = "0.4.1"
+partial_application = "0.2.1"
+strum = "0.25"
+strum_macros = "0.25"

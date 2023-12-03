@@ -2,7 +2,7 @@
 name = "advent_of_code"
 version = "0.1.0"
 edition = "2021"
-default-run = "day2"
+default-run = "day3"
 
 [dependencies]
 regex = "1.5.4"
@@ -12,7 +12,10 @@ strum_macros = "0.25"
 memoize = "0.4.1"
 
 [[bin]]
+name = "day1"
+
+[[bin]]
 name = "day2"
 
 [[bin]]
-name = "day1"
+name = "day3"

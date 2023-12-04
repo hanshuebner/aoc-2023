@@ -49,21 +49,20 @@ fn score_part_1(cards: &Vec<Card>) -> usize {
         .sum()
 }
 
-fn record_copy(id: usize, copies: &mut HashMap<usize, usize>, max_id: usize) {
+fn record_copies(id: usize, copies: &mut HashMap<usize, usize>, max_id: usize, count: usize) -> usize {
     if id <= max_id {
-        *copies.entry(id).or_insert(0) += 1;
+        *copies.entry(id).or_insert(0) += count;
     }
+    copies[&id]
 }
 
 fn score_part_2(cards: &Vec<Card>) -> usize {
     let mut copies: HashMap<usize, usize> = HashMap::new();
     let max_id = cards.len() + 1;
     for card in cards {
-        record_copy(card.id, &mut copies, max_id);
-        for _copy in 0..copies[&card.id] {
-            for won in 0..card_match_count(card) {
-                record_copy(card.id + 1 + won, &mut copies, max_id);
-            }
+        let count = record_copies(card.id, &mut copies, max_id, 1);
+        for won in 0..card_match_count(card) {
+            record_copies(card.id + 1 + won, &mut copies, max_id, count);
         }
     }
     copies.values().sum()

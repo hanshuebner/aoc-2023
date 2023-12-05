@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::env;
 use std::fs::read_to_string;
 use regex::Regex;
@@ -33,13 +34,11 @@ fn parse_mapper(string: &String) -> Mapper {
             .iter()
             .skip(1)
             .filter(|s| !s.is_empty())
-            .map(|line| {
-                let mut numbers = line.split_whitespace().map(|s| s.parse::<usize>().unwrap());
-                (
-                    numbers.next().unwrap(),
-                    numbers.next().unwrap(),
-                    numbers.next().unwrap(),
-                )
+            .map( | line| {
+                let mut numbers = line.split_whitespace().map( | s | s.parse::<usize > ().unwrap());
+                (numbers.next().unwrap(),
+                 numbers.next().unwrap(),
+                 numbers.next().unwrap())
             })
             .collect(),
     }
@@ -85,7 +84,7 @@ fn part_2(input: &Input) -> usize {
         .flat_map(|pair| {
             let start = pair[0];
             let length = pair[1];
-            (start..start+length).collect::<Vec<usize>>()
+            (start..start + length).collect::<Vec<usize>>()
         })
         .map(|seed| seed_to_location(input, &seed))
         .min()

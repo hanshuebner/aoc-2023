@@ -1,7 +1,7 @@
-use std::collections::HashMap;
 use std::env;
 use std::fs::read_to_string;
 use regex::Regex;
+
 
 #[macro_use]
 extern crate partial_application;
@@ -16,11 +16,13 @@ struct Mapper {
 }
 
 fn map_value(mapper: &Mapper, value: &usize) -> usize {
-    if let Some(matched) = mapper.ranges.iter().find(|(_dest, src, len)| *value >= *src && *value < *src + *len) {
-        matched.0 + value - matched.1
-    } else {
-        *value
+    for range in mapper.ranges.iter() {
+        let (dest, src, len) = range;
+        if *value >= *src && *value < *src + *len {
+            return *dest + *value - *src
+        }
     }
+    *value
 }
 
 fn parse_mapper(string: &String) -> Mapper {
@@ -100,6 +102,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use std::time::{Duration, Instant};
     use super::*;
 
     static TEST_INPUT: &str = "\
@@ -143,5 +146,18 @@ humidity-to-location map:
         let input = parse_input(TEST_INPUT);
         assert_eq!(part_1(&input), 35);
         assert_eq!(part_2(&input), 46);
+    }
+
+    #[test]
+    fn test_map_speed() {
+        let mapper = Mapper { from: "foo".to_string(), to: "bar".to_string(), ranges: vec![(0, 1, 1000000)]};
+        let mut result: usize = 0;
+        let start = Instant::now();
+        for i in 0..100000000 {
+            result += map_value(&mapper, &i);
+        }
+        let end = Instant::now();
+        println!("done: {:?} -> {:?}", result, end - start);
+        assert!(end - start < Duration::from_millis(5000));
     }
 }

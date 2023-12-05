@@ -2,7 +2,7 @@
 name = "advent_of_code"
 version = "0.1.0"
 edition = "2021"
-default-run = "day3"
+default-run = "day5"
 
 [dependencies]
 regex = "1.5.4"

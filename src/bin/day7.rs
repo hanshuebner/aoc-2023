@@ -48,7 +48,11 @@ struct Hand {
     bid: usize,
 }
 
-fn parse_hand(input: &str, card_value_map: &Map<char, usize>, make_strands: fn(&Vec<usize>) -> Vec<usize>) -> Hand {
+fn parse_hand(
+    input: &str,
+    card_value_map: &Map<char, usize>,
+    make_strands: fn(&Vec<usize>) -> Vec<usize>,
+) -> Hand {
     let splits: Vec<String> = input.split(" ").map(String::from).collect();
     let card_values: Vec<usize> = splits[0].chars().map(|c| card_value_map[&c]).collect();
     let value = hand_value(make_strands(&card_values));
@@ -60,7 +64,11 @@ fn parse_hand(input: &str, card_value_map: &Map<char, usize>, make_strands: fn(&
     }
 }
 
-fn parse_input(input: &str, card_value_map: &Map<char, usize>, make_strands: fn(&Vec<usize>) -> Vec<usize>) -> Vec<Hand> {
+fn parse_input(
+    input: &str,
+    card_value_map: &Map<char, usize>,
+    make_strands: fn(&Vec<usize>) -> Vec<usize>,
+) -> Vec<Hand> {
     input
         .split("\n")
         .filter(|s| s.len() > 0)
@@ -90,15 +98,26 @@ fn make_strands_2(card_values: &Vec<usize>) -> Vec<usize> {
         .group_by(|&a, &b| a == b)
         .map(|strand| (strand[0], strand.len()))
         .collect();
+    strands_and_lengths.sort_by(|a, b| {
+        // sort joker strand first, then by increasing length
+        if a.0 == 0 {
+            Ordering::Less
+        } else if b.0 == 0 {
+            Ordering::Greater
+        } else {
+            b.1.cmp(&a.1)
+        }
+    });
     if strands_and_lengths[0].0 == 0 && strands_and_lengths[0].1 < 5 {
         // merge joker strand with next strand
         let joker_count = strands_and_lengths[0].1;
         strands_and_lengths.remove(0);
-        strands_and_lengths[0] = (strands_and_lengths[0].0, strands_and_lengths[0].1 + joker_count)
+        strands_and_lengths[0] = (
+            strands_and_lengths[0].0,
+            strands_and_lengths[0].1 + joker_count,
+        )
     }
-    let mut strands: Vec<usize> = strands_and_lengths.iter()
-        .map(|strand| strand.1)
-        .collect();
+    let mut strands: Vec<usize> = strands_and_lengths.iter().map(|strand| strand.1).collect();
     strands.sort_by(|a, b| b.cmp(a));
     strands
 }
@@ -131,7 +150,11 @@ fn compare_hands(a: &Hand, b: &Hand) -> Ordering {
     }
 }
 
-fn compute_result(input: &str, card_value_map: &Map<char, usize>, make_strands: fn(&Vec<usize>) -> Vec<usize>) -> usize {
+fn compute_result(
+    input: &str,
+    card_value_map: &Map<char, usize>,
+    make_strands: fn(&Vec<usize>) -> Vec<usize>,
+) -> usize {
     let mut hands = parse_input(input, card_value_map, make_strands);
     hands.sort_by(compare_hands);
 
@@ -145,8 +168,14 @@ fn compute_result(input: &str, card_value_map: &Map<char, usize>, make_strands: 
 fn main() {
     let filename = env::args().nth(1).unwrap();
     let input = &read_to_string(filename).unwrap();
-    println!("part 1: {:?}", compute_result(input, &CARD_VALUES_1, make_strands_1));
-    println!("part 2: {:?}", compute_result(input, &CARD_VALUES_2, make_strands_2));
+    println!(
+        "part 1: {:?}",
+        compute_result(input, &CARD_VALUES_1, make_strands_1)
+    );
+    println!(
+        "part 2: {:?}",
+        compute_result(input, &CARD_VALUES_2, make_strands_2)
+    );
 }
 
 #[cfg(test)]
@@ -205,20 +234,38 @@ QQQJA 483
 
     #[test]
     fn test_hand_comparison_2() {
-        assert_eq!(compare_hands(&parse_hand_2("JJJJJ"), &parse_hand_2("22222")), Ordering::Less);
-        assert_eq!(compare_hands(&parse_hand_2("JKKK2"), &parse_hand_2("QQQQ2")), Ordering::Less);
+        assert_eq!(
+            compare_hands(&parse_hand_2("JJJJJ"), &parse_hand_2("22222")),
+            Ordering::Less
+        );
+        assert_eq!(
+            compare_hands(&parse_hand_2("JKKK2"), &parse_hand_2("QQQQ2")),
+            Ordering::Less
+        );
 
-        assert_eq!(compare_hands(&parse_hand_2("22222"), &parse_hand_2("JJJJJ")), Ordering::Greater);
-        assert_eq!(compare_hands(&parse_hand_2("QQQQ2"), &parse_hand_2("JKKK2")), Ordering::Greater);
+        assert_eq!(
+            compare_hands(&parse_hand_2("22222"), &parse_hand_2("JJJJJ")),
+            Ordering::Greater
+        );
+        assert_eq!(
+            compare_hands(&parse_hand_2("QQQQ2"), &parse_hand_2("JKKK2")),
+            Ordering::Greater
+        );
     }
 
     #[test]
     fn test_part_1() {
-        assert_eq!(compute_result(TEST_INPUT, &CARD_VALUES_1, make_strands_1), 6440)
+        assert_eq!(
+            compute_result(TEST_INPUT, &CARD_VALUES_1, make_strands_1),
+            6440
+        )
     }
 
     #[test]
     fn test_part_2() {
-        assert_eq!(compute_result(TEST_INPUT, &CARD_VALUES_2, make_strands_2), 5905)
+        assert_eq!(
+            compute_result(TEST_INPUT, &CARD_VALUES_2, make_strands_2),
+            5905
+        )
     }
 }

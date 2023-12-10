@@ -91,51 +91,34 @@ fn find_animal(map: &Map) -> (usize, usize) {
     panic!("Animal not found")
 }
 
+fn neighboring_inlets(x: usize, y: usize, map: &Map) -> (bool, bool, bool, bool) {
+    (
+        x > 0 && matches!(map[y][x - 1].kind, Pipe(East, _) | Pipe(_, East)),
+        x < map[0].len() - 1 && matches!(map[y][x + 1].kind, Pipe(West, _) | Pipe(_, West)),
+        y > 0 && matches!(map[y - 1][x].kind, Pipe(North, _) | Pipe(_, North)),
+        y < map.len() - 1 && matches!(map[y + 1][x].kind, Pipe(South, _) | Pipe(_, South)),
+    )
+}
+
 fn find_first_step(x: usize, y: usize, map: &Map) -> Direction {
-    if x > 0 && matches!(map[y][x - 1].kind, Pipe(East, _) | Pipe(_, East)) {
-        West
-    } else if x < map[0].len() - 1 && matches!(map[y][x + 1].kind, Pipe(West, _) | Pipe(_, West)) {
-        East
-    } else if y > 0 && matches!(map[y - 1][x].kind, Pipe(North, _) | Pipe(_, North)) {
-        South
-    } else if y < map.len() - 1 && matches!(map[y + 1][x].kind, Pipe(South, _) | Pipe(_, South)) {
-        North
-    } else {
-        panic!("No first tile found");
+    match neighboring_inlets(x, y, &map) {
+        (true, _, _, _) => West,
+        (_, true, _, _) => East,
+        (_, _, true, _) => South,
+        (_, _, _, true) => North,
+        _ => panic!("No first tile found"),
     }
 }
 
 fn animal_tile_kind(x: usize, y: usize, map: &Map) -> TileKind {
-    let connects = (
-        if x > 0 && matches!(map[y][x - 1].kind, Pipe(East, _) | Pipe(_, East)) {
-            Some(West)
-        } else {
-            None
-        },
-        if x < map[0].len() - 1 && matches!(map[y][x + 1].kind, Pipe(West, _) | Pipe(_, West)) {
-            Some(East)
-        } else {
-            None
-        },
-        if y < map.len() - 1 && matches!(map[y + 1][x].kind, Pipe(North, _) | Pipe(_, North)) {
-            Some(South)
-        } else {
-            None
-        },
-        if y > 0 && matches!(map[y - 1][x].kind, Pipe(South, _) | Pipe(_, South)) {
-            Some(North)
-        } else {
-            None
-        },
-    );
-    match connects {
-        (Some(West), _, Some(South), _) => Pipe(South, West),
-        (Some(West), Some(East), _, _) => Pipe(East, West),
-        (Some(West), _, _, Some(North)) => Pipe(North, West),
-        (_, Some(East), Some(South), _) => Pipe(South, East),
-        (_, Some(East), _, Some(North)) => Pipe(North, East),
-        (_, _, Some(South), Some(North)) => Pipe(North, South),
-        _ => panic!("Cannot determine type of animal tile")
+    match neighboring_inlets(x,y, &map) {
+        (true, _, true, _) => Pipe(North, West),
+        (true, true, _, _) => Pipe(East, West),
+        (true, _, _, true) => Pipe(South, West),
+        (_, true, true, _) => Pipe(North, East),
+        (_, true, _, true) => Pipe(South, East),
+        (_, _, true, true) => Pipe(North, South),
+        _ => panic!("Cannot determine type of animal tile"),
     }
 }
 

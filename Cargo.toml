@@ -2,7 +2,7 @@
 name = "advent_of_code"
 version = "0.1.0"
 edition = "2021"
-default-run = "day9"
+default-run = "day10"
 
 [dependencies]
 regex = "1.5.4"
@@ -41,3 +41,6 @@ name = "day8"
 
 [[bin]]
 name = "day9"
+
+[[bin]]
+name = "day10"

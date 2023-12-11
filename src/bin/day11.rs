@@ -6,30 +6,16 @@ use std::fs::read_to_string;
 
 // trace::init_depth_var!();
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 struct Galaxy {
     number: usize,
     x: usize,
     y: usize,
 }
 
-type Universe = Vec<Vec<Option<Galaxy>>>;
+type Universe = HashSet<Galaxy>;
 
-fn repeat_elements<T: Copy>(input: &Vec<Option<T>>, repeats: &HashSet<usize>) -> Vec<Option<T>> {
-    input
-        .into_iter()
-        .enumerate()
-        .flat_map(|(index, value)| {
-            if repeats.contains(&index) {
-                vec![None, None]
-            } else {
-                vec![*value]
-            }
-        })
-        .collect()
-}
-
-fn make_universe(string: &str) -> Universe {
+fn make_universe(string: &str, expand_factor: usize) -> Universe {
     let mut galaxy_number = 0;
     let raw: Vec<Vec<Option<usize>>> = string
         .split('\n')
@@ -47,68 +33,50 @@ fn make_universe(string: &str) -> Universe {
                 .collect()
         })
         .collect();
-    let mut empty_cols: HashSet<usize> = HashSet::new();
-    for col in 0..raw[0].len() {
-        if raw.iter().all(|row| row[col].is_none()) {
-            empty_cols.insert(col);
-        }
-    }
-    let raw_expanded: Vec<Vec<Option<usize>>> = raw
+    let empty_rows: HashSet<usize> = raw
         .iter()
-        .map(|row| repeat_elements(&row, &empty_cols))
-        .map(|row| {
-            if row.iter().all(|cell| cell.is_none()) {
-                vec![row.clone(), row]
-            } else {
-                vec![row]
-            }
-        })
-        .flatten()
-        .collect();
-    raw_expanded.iter()
         .enumerate()
-        .map(|(y, row)| {
-            row.iter()
-                .enumerate()
-                .map(|(x, cell)| {
-                    cell.map(|galaxy_number| Galaxy {
-                        number: galaxy_number,
-                        x,
-                        y,
-                    })
-                })
-                .collect()
-        })
-        .collect()
-}
-
-fn shortest_path(
-    from: &Galaxy,
-    to: &Galaxy,
-) -> usize {
-    from.x.max(to.x) - from.x.min(to.x)
-        + from.y.max(to.y) - from.y.min(to.y)
-}
-
-fn print_universe(universe: &Universe) {
-    for row in universe {
-        for galaxy in row {
-            if galaxy.is_none() {
-                print!(".")
-            } else {
-                print!("{}", (galaxy.unwrap().number % 10).to_string())
+        .filter(|(_, row)| row.iter().all(|cell| cell.is_none()))
+        .map(|(y, _)| y)
+        .collect();
+    let empty_cols: HashSet<usize> = raw[0]
+        .iter()
+        .enumerate()
+        .filter(|(x, _)| raw.iter().all(|row| row[*x].is_none()))
+        .map(|(x, _)| x)
+        .collect();
+    let mut expanded_y = 0;
+    let mut universe = Universe::new();
+    for y in 0..raw.len() {
+        if empty_rows.contains(&y) {
+            expanded_y += expand_factor - 1
+        } else {
+            let mut expanded_x = 0;
+            for x in 0..raw[0].len() {
+                if empty_cols.contains(&x) {
+                    expanded_x += expand_factor - 1
+                } else if raw[y][x].is_some() {
+                    universe.insert(Galaxy {
+                        number: raw[y][x].unwrap(),
+                        x: expanded_x,
+                        y: expanded_y,
+                    });
+                }
+                expanded_x += 1;
             }
         }
-        print!("\n")
+        expanded_y += 1;
     }
+    universe
 }
 
-fn part_1(universe: &Universe) -> usize {
+fn shortest_path(from: &Galaxy, to: &Galaxy) -> usize {
+    from.x.max(to.x) - from.x.min(to.x) + from.y.max(to.y) - from.y.min(to.y)
+}
+
+fn shortest_paths_sum(universe: &Universe) -> usize {
     universe
         .iter()
-        .flatten()
-        .filter(|galaxy| !galaxy.is_none())
-        .map(|galaxy| galaxy.unwrap())
         .combinations(2)
         .map(|pair| shortest_path(&pair[0], &pair[1]))
         .sum()
@@ -117,9 +85,8 @@ fn part_1(universe: &Universe) -> usize {
 fn main() {
     let filename = env::args().nth(1).unwrap();
     let input = &read_to_string(filename).unwrap();
-    let universe = make_universe(input);
-    println!("part 1: {:?}", part_1(&universe));
-    //    println!("part 2: {:?}", part_2(&map));
+    println!("part 1: {:?}", shortest_paths_sum(&make_universe(input, 1)));
+    println!("part 2: {:?}", shortest_paths_sum(&make_universe(input, 1000000)));
 }
 
 #[cfg(test)]
@@ -140,8 +107,8 @@ mod tests {
 
     #[test]
     fn test_part_1_1() {
-        let universe = make_universe(TEST_INPUT_1_1);
-        print_universe(&universe);
-        assert_eq!(part_1(&universe), 374);
+        assert_eq!(shortest_paths_sum(&make_universe(TEST_INPUT_1_1, 2)), 374);
+        assert_eq!(shortest_paths_sum(&make_universe(TEST_INPUT_1_1, 10)), 1030);
+        assert_eq!(shortest_paths_sum(&make_universe(TEST_INPUT_1_1, 100)), 8410);
     }
 }

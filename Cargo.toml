@@ -2,7 +2,7 @@
 name = "advent_of_code"
 version = "0.1.0"
 edition = "2021"
-default-run = "day10"
+default-run = "day11"
 
 [dependencies]
 regex = "1.5.4"
@@ -13,6 +13,7 @@ memoize = "0.4.1"
 trace = "*"
 phf = { version = "0.11", features = ["macros"] }
 num-integer = "*"
+itertools = "0.10"
 
 
 [[bin]]
@@ -44,3 +45,6 @@ name = "day9"
 
 [[bin]]
 name = "day10"
+
+[[bin]]
+name = "day11"

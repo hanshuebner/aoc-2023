@@ -11,6 +11,7 @@ dependencies = [
  "num-integer",
  "partial_application",
  "phf",
+ "prog1",
  "regex",
  "strum",
  "strum_macros",
@@ -221,6 +222,12 @@ checksum = "39278fbbf5fb4f646ce651690877f89d1c5811a3d4acb27700c1cb3cdb78fd3b"
 dependencies = [
  "unicode-ident",
 ]
+
+[[package]]
+name = "prog1"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3dea9bcd6ad34869d6163b3a909125c694bf2076d5121cd7ea6fc5c6641bd69a"
 
 [[package]]
 name = "quote"

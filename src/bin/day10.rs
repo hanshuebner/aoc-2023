@@ -174,11 +174,8 @@ fn part_2(map: &Map) -> usize {
         let mut inside = false;
         for tile in row {
             if tile.is_loop_border {
-                match tile.kind {
-                    Pipe(South, _) | Pipe(_, South) => {
-                        inside = !inside;
-                    }
-                    _ => (),
+                if let Pipe(South, _) | Pipe(_, South) = tile.kind {
+                    inside = !inside;
                 }
             } else if inside {
                 count += 1
